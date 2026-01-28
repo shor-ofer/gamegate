@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P2P Game - Counter</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .game-section {
+            display: none;
+        }
+        
+        .lobby-section {
+            text-align: center;
+        }
+        
+        .input-group {
+            margin: 20px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .primary-btn {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .primary-btn:hover {
+            background-color: #0056b3;
+        }
+        
+        .success-btn {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .success-btn:hover {
+            background-color: #1e7e34;
+        }
+        
+        .counter-display {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .counter-value {
+            font-size: 4em;
+            font-weight: bold;
+            color: #007bff;
+            margin: 20px 0;
+        }
+        
+        .users-list {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .user-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            z-index: 1000;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            animation: floatUp 1.5s ease-out forwards;
+            pointer-events: none;
+            max-width: 400px;
+            word-wrap: break-word;
+        }
+        
+        @keyframes floatUp {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) translateY(20px) scale(0.9);
+            }
+            20% {
+                opacity: 1;
+                transform: translate(-50%, -50%) translateY(0) scale(1);
+            }
+            80% {
+                opacity: 1;
+                transform: translate(-50%, -50%) translateY(-10px) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) translateY(-30px) scale(0.95);
+            }
+        }
+        
+        .status.success {
+            background-color: rgba(212, 237, 218, 0.95);
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+        
+        .status.error {
+            background-color: rgba(248, 215, 218, 0.95);
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+        
+        .status.info {
+            background-color: rgba(209, 236, 241, 0.95);
+            border: 2px solid #17a2b8;
+            color: #0c5460;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .peer-connections {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .connection-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .connection-item:last-child {
+            border-bottom: none;
+        }
+        
+        .connection-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .connection-status.connected {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .connection-status.connecting {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .connection-status.disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .public-games-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 10px 0;
+            background-color: white;
+        }
+        
+        .game-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .game-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .game-item:last-child {
+            border-bottom: none;
+        }
+        
+        .game-info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .game-id {
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .game-creator {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .game-meta {
+            text-align: right;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .player-count {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .secondary-btn {
+            background-color: #6c757d;
+            color: white;
+            padding: 8px 16px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        
+        .secondary-btn:hover {
+            background-color: #545b62;
+        }
+        
+        .server-status {
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .server-status.connected {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .server-status.disconnected {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .server-status.connecting {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .status-indicator {
+            margin-right: 8px;
+            font-size: 16px;
+        }
+        
+        .disabled-section {
+            opacity: 0.5;
+            pointer-events: none;
+            position: relative;
+        }
+        
+        .disabled-section::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 10;
+        }
+        
+        .or-divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .or-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #ddd;
+        }
+        
+        .or-divider span {
+            background: white;
+            padding: 0 10px;
+            color: #666;
+            font-weight: bold;
+        }
+        
+        .waiting-room {
+            text-align: center;
+            padding: 30px;
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .start-game-section {
+            margin-top: 20px;
+        }
+        
+        .game-playing-section {
+            margin: 20px 0;
+        }
+        
+        .input-group label input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 P2P Counter Game</h1>
+            <p>Create or join a game to play with friends!</p>
+            <div id="serverStatus" class="server-status">
+                <span class="status-indicator" id="statusIndicator">🔄</span>
+                <span id="statusText">Connecting to server...</span>
+            </div>
+        </div>
+
+        <!-- Lobby Section -->
+        <div id="lobby" class="lobby-section">
+            <div class="input-group">
+                <label for="userName">Your Name:</label>
+                <input type="text" id="userName" placeholder="Enter your name" maxlength="20">
+            </div>
+            
+            <div class="input-group">
+                <label>
+                    <input type="checkbox" id="gameIsPublic" checked> 
+                    Make game public (visible to others)
+                </label>
+            </div>
+            
+            <div class="button-group">
+                <button id="createGameBtn" class="primary-btn">Create New Game</button>
+            </div>
+            
+            <hr>
+            
+            <h3>Join a Game</h3>
+            
+            <!-- Public Games Browser -->
+            <div id="publicGamesSection">
+                <h4>Public Games Available</h4>
+                <div id="publicGamesList" class="public-games-list">
+                    <div class="status info">Loading public games...</div>
+                </div>
+            </div>
+            
+            <div class="or-divider">
+                <span>OR</span>
+            </div>
+            
+            <!-- Join by Game ID -->
+            <div class="input-group">
+                <label for="gameId">Join by Game ID:</label>
+                <input type="text" id="gameId" placeholder="Enter game ID" maxlength="8">
+                <button id="joinGameBtn" class="success-btn">Join Game</button>
+            </div>
+        </div>
+
+        <!-- Game Section -->
+        <div id="gameSection" class="game-section">
+            <div class="game-info">
+                <div>
+                    <strong>Game ID: <span id="currentGameId"></span></strong>
+                </div>
+                <div>
+                    <strong>Status: <span id="gameStatus">Waiting</span></strong>
+                </div>
+                <div>
+                    <strong>Players: <span id="playerCount">0</span></strong>
+                </div>
+            </div>
+
+            <!-- Waiting Room Section -->
+            <div id="waitingRoom" class="waiting-room">
+                <h2>🕐 Waiting Room</h2>
+                <p>Waiting for the game creator to start the game...</p>
+                <div id="startGameSection" class="start-game-section" style="display: none;">
+                    <button id="startGameBtn" class="success-btn">🎮 Start Game</button>
+                    <p>All players are ready! Click to start the game.</p>
+                </div>
+            </div>
+
+            <!-- Game Playing Section -->
+            <div id="gamePlayingSection" class="game-playing-section" style="display: none;">
+                <div class="counter-display">
+                    <h2>Counter</h2>
+                    <div class="counter-value" id="counterValue">0</div>
+                    <button id="incrementBtn" class="primary-btn">Click to Increment (+1)</button>
+                </div>
+            </div>
+
+            <div class="users-list">
+                <h3>Players in Game</h3>
+                <div id="usersList"></div>
+            </div>
+
+            <div class="peer-connections debug-only" id="p2pConnectionsSection" style="display: none;">
+                <h3>P2P Connections</h3>
+                <div id="connectionsList">
+                    <p class="status info">Establishing peer connections...</p>
+                </div>
+            </div>
+
+            <button id="leaveGameBtn" class="primary-btn" style="margin-top: 20px;">Leave Game</button>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="statusMessages"></div>
+    </div>
+
+    <!-- Socket.io and PeerJS -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
