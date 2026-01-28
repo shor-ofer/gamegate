@@ -1,12 +1,13 @@
 const express = require('express');
 const http = require('http');
-const socketIo = require('socket.io');
+const { Server } = require('socket.io');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, {
+const io = new Server(server, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"]
@@ -424,7 +425,29 @@ app.get('/api/games/:gameId', (req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 3000;
+
+// Debug: Log current directory and file structure
+console.log('Current working directory:', process.cwd());
+console.log('Public directory:', path.join(__dirname, 'public'));
+
+const publicDir = path.join(__dirname, 'public');
+const indexFile = path.join(publicDir, 'index.html');
+
+if (fs.existsSync(publicDir)) {
+  console.log('✓ Public directory found');
+} else {
+  console.log('✗ Public directory not found');
+}
+
+if (fs.existsSync(indexFile)) {
+  console.log('✓ index.html found');
+} else {
+  console.log('✗ index.html not found');
+}
+
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Open http://localhost:${PORT} to access the game`);
+  console.log(`P2P Game Server running on port ${PORT}`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`Open http://localhost:${PORT} to access the game`);
+  }
 });
